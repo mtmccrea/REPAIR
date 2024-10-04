@@ -52,38 +52,41 @@ addpath('utils')
 
 fs = 48e3;
 ENABLE_PLOTTING = 1;
-path_for_plots = [];                             % set to '[]' to not save plots, or, e.g. './output/plots'
-path_for_renders = './output/renders';       % set to '[]' to not save renders,
-path_for_renders_lt = './output/renders_lt'; % set to '[]' to not save listening test renders,
+path_for_plots = [];                            % set to '[]' to not save plots, or, e.g. './output/plots'
+path_for_renders = './output/renders';          % set to '[]' to not save renders,
+path_for_renders_lt = './output/renders_lt';    % set to '[]' to not save listening test renders,
 ideal_SH_order = 4;
 mic_arrays = {'eigenmike32','tetra','intensity-probe'};  % Options: {'eigenmike32', 'tetra', 'intensity-probe'}
-t_designs = load('n_designs_1_124'); % Courtesy of Chris Hold (https://github.com/chris-hld/spaudiopy)
+t_designs = load('n_designs_1_124');            % Courtesy of Chris Hold (https://github.com/chris-hld/spaudiopy)
 signalLength = fs/16;
 sofa_file = '/Users/mccorml1/Documents/HRIRs_SOFA/D1_48K_24bit_256tap_FIR_SOFA_KU100.sofa'; % Can be obtained from the SADIE HRIR database, or any other SOFA file can be used
 
 % Default REPAIR configuration 
-pars.grid_svecs = []; % Defined for each test (can be e.g. SH weights, space-domain steering vectors, etc.)
+pars.grid_svecs = [];                           % Defined for each test (can be e.g. SH weights, space-domain steering vectors, etc.)
 pars.grid_dirs_xyz = t_designs.N060; 
 pars.grid_dirs_rad = unitCart2sph(pars.grid_dirs_xyz);
-pars.grid_weights = findGridWeights(pars.grid_dirs_rad(:,1), pi/2-pars.grid_dirs_rad(:,2))./(4*pi); %(1/size(pars.grid_dirs_rad,1)).*ones(size(pars.grid_dirs_rad,1),1);
+pars.grid_weights = findGridWeights( ...
+    pars.grid_dirs_rad(:,1), ...
+    pi/2-pars.grid_dirs_rad(:,2) ...
+    ) ./ (4*pi); %(1/size(pars.grid_dirs_rad,1)).*ones(size(pars.grid_dirs_rad,1),1);
 pars.fs = fs;  
-pars.SCMavgOption = 'recur';  % Options: {'block', 'recur', 'alltime'}
-pars.SCMavg_coeff = 0.5; % Temporal averaging coefficient, [0..1], if SCMavgOption is set to "recur"
-pars.SCMavg_Nframes = 1;  % Number of frames in each averaging block, if SCMavgOption is set to "block"
-pars.Kestimator = 'RECON';  % Options: {'SORTE', 'SORTED', 'RECON', 'ORACLE'}
-pars.DoAestimator = 'MUSIC'; % Options: {'MUSIC', 'SRP', 'ORACLE'}
-pars.winsize = 256;     % Window size, in time-domain samples
-pars.freqGrouping = 'octave'; % Options: {'broadband', 'octave', 'erb', 'fullres'}
-pars.streamBalance = 1; % 0: only diffuse stream, 1: both streams are balanced, 2: only direct stream
-pars.ENABLE_DIFF_WHITENING = 1;              % Applies an operation that diagonalises the SCMs when under diffuse conditions 
-pars.ENABLE_COHERENT_FOCUSING = 1;           % Only used if the steering vectors are frequency dependent, and if there is some band grouping
-pars.ENABLE_AMBIENT_ENERGY_PRESERVATION = 1; % Forces the beamformers used for the ambient stream to be energy-preserving over the sphere
-pars.decorrelation = 'covMatch'; % Options: {'off', 'convNoise', 'shapedNoise', 'phaseRand', 'covMatch'}
-pars.beamformerOption = 'SD';    % Options: {'pinv', 'MF', 'SD'}
-pars.ENABLE_QUANTISE_TO_NEAREST_LS = 0;      % Quantise to nearest loudspeaker instead of using VBAP
-pars.maxAnaFreq_Hz = fs/2;       % above this frequency, everything is treated as one band
+pars.SCMavgOption = 'recur';                    % Options: {'block', 'recur', 'alltime'}
+pars.SCMavg_coeff = 0.5;                        % Temporal averaging coefficient, [0..1], if SCMavgOption is set to "recur"
+pars.SCMavg_Nframes = 1;                        % Number of frames in each averaging block, if SCMavgOption is set to "block"
+pars.Kestimator = 'RECON';                      % Options: {'SORTE', 'SORTED', 'RECON', 'ORACLE'}
+pars.DoAestimator = 'MUSIC';                    % Options: {'MUSIC', 'SRP', 'ORACLE'}
+pars.winsize = 256;                             % Window size, in time-domain samples
+pars.freqGrouping = 'octave';                   % Options: {'broadband', 'octave', 'erb', 'fullres'}
+pars.streamBalance = 1;                         % 0: only diffuse stream, 1: both streams are balanced, 2: only direct stream
+pars.ENABLE_DIFF_WHITENING = 1;                 % Applies an operation that diagonalises the SCMs when under diffuse conditions 
+pars.ENABLE_COHERENT_FOCUSING = 1;              % Only used if the steering vectors are frequency dependent, and if there is some band grouping
+pars.ENABLE_AMBIENT_ENERGY_PRESERVATION = 1;    % Forces the beamformers used for the ambient stream to be energy-preserving over the sphere
+pars.decorrelation = 'covMatch';                % Options: {'off', 'convNoise', 'shapedNoise', 'phaseRand', 'covMatch'}
+pars.beamformerOption = 'SD';                   % Options: {'pinv', 'MF', 'SD'}
+pars.ENABLE_QUANTISE_TO_NEAREST_LS = 0;         % Quantise to nearest loudspeaker instead of using VBAP
+pars.maxAnaFreq_Hz = fs/2;                      % above this frequency, everything is treated as one band
 pars.ls_dirs_deg = 180/pi.*unitCart2sph(t_designs.N008);
-pars.vbapNorm = 1; % 0:reverberant room, ~0.5: dry listening room, 1: anechoic
+pars.vbapNorm = 1;                              % 0:reverberant room, ~0.5: dry listening room, 1: anechoic
 
 % Create output folder for the renders
 if ~isempty(path_for_renders), if ~exist(path_for_renders, 'dir'), mkdir(path_for_renders); end, end
